@@ -12,6 +12,7 @@ public class Enemy : MonoBehaviour
     public Image healthBar;
     public Canvas enemyInfo;
     public Camera playerCam;
+    public GameObject playerObject;
     public Player player;
 
     // The target for the enemy's nav mesh
@@ -29,9 +30,11 @@ public class Enemy : MonoBehaviour
         data.startHP = 50f;
         data.hp = data.startHP;
 
-        target = PlayerManager.instance.playerObject.transform;
-        player = PlayerManager.instance.playerObject.GetComponent<Player>();
-        // Retrieve player object from PlayerManager
+        playerObject = PlayerManager.instance.playerObject;
+        target = playerObject.transform;
+        player = playerObject.GetComponent<Player>();
+        playerCam = playerObject.transform.GetChild(0).GetComponent<Camera>();
+
         agent = GetComponent<NavMeshAgent>();
         agent.speed = data.moveSpeed;
     }
@@ -50,7 +53,7 @@ public class Enemy : MonoBehaviour
             // If the enemy gets close enough to attack
             if (distanceFromPlayer < agent.stoppingDistance) {
                 Attack();
-                
+
                 FacePlayer();
             }
         }
