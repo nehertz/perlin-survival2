@@ -1,41 +1,94 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using UnityEngine.AI;
 
 /**
  * Implements the functionality of an enemy that has health and can die
  */
 public class Enemy : MonoBehaviour
 {
-    public float startHealth = 50f;
-    public float health;
+    public EnemyData data;
     public Image healthBar;
     public Canvas enemyInfo;
     public Camera playerCam;
+    public Player player;
+
+    // The target for the enemy's nav mesh
+    Transform target;
+    // Nav mesh for the enemy
+    NavMeshAgent agent;
+
+    public float attackCooldown = 0f;
 
     void Start()
     {
-        health = startHealth;
+        data.aggroRadius = 50f;
+        data.damage = 10f;
+        data.attackSpeed = 0.5f;
+        data.startHP = 50f;
+        data.hp = data.startHP;
+
+        target = PlayerManager.instance.playerObject.transform;
+        player = PlayerManager.instance.playerObject.GetComponent<Player>();
+        // Retrieve player object from PlayerManager
+        agent = GetComponent<NavMeshAgent>();
+        agent.speed = data.moveSpeed;
     }
 
     void Update()
     {
-        //Rect infoRect = enemyInfo.pixelRect;
-        RectTransform infoTransform = enemyInfo.GetComponent<RectTransform>();
+        float distanceFromPlayer = Vector3.Distance(target.position, transform.position);
 
-        if (CountCornersVisibleFrom(infoTransform, playerCam) > 0) {
-            // Make the enemy's health bar and name face the player's camera
-            Vector3 faceCamera = playerCam.transform.position - enemyInfo.transform.position;
+        // Display the enemy's info above their head.
+        DisplayEnemyInfo();
 
-            enemyInfo.enabled = true;
-            faceCamera.x = 0f;
-            faceCamera.z = 0f;
+        // If the player enters the aggro range of the enemy
+        if (distanceFromPlayer < data.aggroRadius) {
+            ChasePlayer();
 
-            enemyInfo.transform.LookAt(playerCam.transform.position - faceCamera);
-            enemyInfo.transform.Rotate(0, 180, 0);
-        } else {
-            enemyInfo.enabled = false;
+            // If the enemy gets close enough to attack
+            if (distanceFromPlayer < agent.stoppingDistance) {
+                Attack();
+                
+                FacePlayer();
+            }
         }
+
+        // Decrease the attackCooldown according to game time passed
+        attackCooldown -= Time.deltaTime;
+    }
+
+    /**
+     * Method that handles the enemy's attack functionality
+     */
+    void Attack()
+    {
+        // If the enemy is ready to attack
+        if (attackCooldown <= 0f) {
+            player.TakeDamage(data.damage);
+            // Reset attackCooldown
+            attackCooldown = 1f / data.attackSpeed;
+        }
+    }
+
+    /**
+     * Makes the enemy face the player if they are within range
+     */
+    void FacePlayer()
+    {
+        Vector3 direction = (target.position - transform.position).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+    }
+
+    /**
+     * Chase the player using a NavMesh
+     */
+    void ChasePlayer()
+    {
+        // Chase player
+        agent.SetDestination(target.position);
     }
 
     /**
@@ -53,18 +106,41 @@ public class Enemy : MonoBehaviour
 
         int visibleCorners = 0;
         Vector3 tempScreenSpaceCorner;
-        for (var i = 0; i < objectCorners.Length; i++)
-        {
+        for (var i = 0; i < objectCorners.Length; i++) {
             // Transform world space position of corner to screen space
             tempScreenSpaceCorner = camera.WorldToScreenPoint(objectCorners[i]);
 
             // If the corner is inside the screen
-            if (screenBounds.Contains(tempScreenSpaceCorner))
-            {
+            if (screenBounds.Contains(tempScreenSpaceCorner)) {
                 visibleCorners++;
             }
         }
+
         return visibleCorners;
+    }
+
+    /**
+     * If the enemy's info is within camera view, display the info. Otherwise, disable it.
+     * Also, make the info face toward the camera.
+     */
+    void DisplayEnemyInfo()
+    {
+        //Rect infoRect = enemyInfo.pixelRect;
+        RectTransform infoTransform = enemyInfo.GetComponent<RectTransform>();
+
+        if (CountCornersVisibleFrom(infoTransform, playerCam) > 0) {
+            // Make the enemy's health bar and name face the player's camera
+            Vector3 faceCamera = playerCam.transform.position - enemyInfo.transform.position;
+
+            enemyInfo.enabled = true;
+            faceCamera.x = 0f;
+            faceCamera.z = 0f;
+
+            enemyInfo.transform.LookAt(playerCam.transform.position - faceCamera);
+            enemyInfo.transform.Rotate(0, 180, 0);
+        } else {
+            enemyInfo.enabled = false;
+        }
     }
 
     /**
@@ -88,15 +164,16 @@ public class Enemy : MonoBehaviour
 
     /**
      * Method that subtracts the damage taken from the total health; supports death
+     * @param damage The amount of damage the enemy will take
      */
     public void TakeDamage(float damage)
     {
         StartCoroutine(TurnRed());
 
-        health -= damage;
-        healthBar.fillAmount = health / startHealth;
+        data.hp -= damage;
+        healthBar.fillAmount = data.hp / data.startHP;
 
-        if (health <= 0) {
+        if (data.hp <= 0) {
             Die();
         }
     }
@@ -107,5 +184,25 @@ public class Enemy : MonoBehaviour
     void Die()
     {
         Destroy(gameObject);
+    }
+
+    /**
+     * Struct that keeps track of useful enemy data
+     */
+    [System.Serializable]
+    public struct EnemyData
+    {
+        // Radius of aggression for the enemy
+        public float aggroRadius;
+        // Starting hp for enemy (full health)
+        public float startHP;
+        // Current enemy HP
+        public float hp;
+        // Damage the enemy does
+        public float damage;
+        // The rate at which the enemy may attack
+        public float attackSpeed;
+        // The rate at which the enemy may move
+        public float moveSpeed;
     }
 }

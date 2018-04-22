@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.AI;
 
 public class TerrainChunk {
 	
@@ -28,18 +29,21 @@ public class TerrainChunk {
 	MeshSettings meshSettings;
 	Transform viewer;
 
-	public TerrainChunk(Vector2 coord, HeightMapSettings heightMapSettings, MeshSettings meshSettings, LODInfo[] detailLevels, int colliderLODIndex, Transform parent, Transform viewer, Material material) {
+    [SerializeField]
+    public NavMeshSurface surface;
+
+    public TerrainChunk(Vector2 coord, HeightMapSettings heightMapSettings, MeshSettings meshSettings, LODInfo[] detailLevels, int colliderLODIndex, Transform parent, Transform viewer, Material material) {
 		this.coord = coord;
 		this.detailLevels = detailLevels;
 		this.colliderLODIndex = colliderLODIndex;
 		this.heightMapSettings = heightMapSettings;
 		this.meshSettings = meshSettings;
 		this.viewer = viewer;
+        this.surface = NavMeshSurface.FindObjectOfType<NavMeshSurface>();
 
 		sampleCentre = coord * meshSettings.meshWorldSize / meshSettings.meshScale;
 		Vector2 position = coord * meshSettings.meshWorldSize ;
 		bounds = new Bounds(position,Vector2.one * meshSettings.meshWorldSize );
-
 
 		meshObject = new GameObject("Terrain Chunk");
 		meshRenderer = meshObject.AddComponent<MeshRenderer>();
@@ -66,9 +70,7 @@ public class TerrainChunk {
 
 	public void Load() {
 		ThreadedDataRequester.RequestData(() => HeightMapGenerator.GenerateHeightMap (meshSettings.numVertsPerLine, meshSettings.numVertsPerLine, heightMapSettings, sampleCentre), OnHeightMapReceived);
-	}
-
-
+    }
 
 	void OnHeightMapReceived(object heightMapObject) {
 		this.heightMap = (HeightMap)heightMapObject;
@@ -111,8 +113,6 @@ public class TerrainChunk {
 						lodMesh.RequestMesh (heightMap, meshSettings);
 					}
 				}
-
-
 			}
 
 			if (wasVisible != visible) {
@@ -139,9 +139,10 @@ public class TerrainChunk {
 				if (lodMeshes [colliderLODIndex].hasMesh) {
 					meshCollider.sharedMesh = lodMeshes [colliderLODIndex].mesh;
 					hasSetCollider = true;
-				}
+                    surface.BuildNavMesh();
+                }
 			}
-		}
+        }
 	}
 
 	public void SetVisible(bool visible) {

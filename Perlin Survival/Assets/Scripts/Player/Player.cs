@@ -10,14 +10,12 @@ public class Player : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		//
-	}
-	
-	// Update is called once per frame
-	void Update () {
-        TakeDamage(0.1f);
-	}
+        // Display HP at the start of game
+        int hpInt = (int)hp;
 
+        hpText.text = hpInt.ToString();
+    }
+	
     /**
      * Method that subtracts the damage taken from the total health; supports death
      */
