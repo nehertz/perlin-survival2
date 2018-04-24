@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 224903127307863766}
   - component: {fileID: 222390493637895826}
   - component: {fileID: 114623518556255146}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Health
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -39,7 +39,7 @@ GameObject:
   - component: {fileID: 223847173368356510}
   - component: {fileID: 114040854522476110}
   - component: {fileID: 114708621403763326}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Health Bar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -60,9 +60,9 @@ GameObject:
   - component: {fileID: 23284841385058984}
   - component: {fileID: 114701136378740632}
   - component: {fileID: 54922850485155696}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Goblin Enemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -77,7 +77,7 @@ GameObject:
   - component: {fileID: 224062716393100896}
   - component: {fileID: 222030875076548448}
   - component: {fileID: 114840656142096096}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: EnemyName
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 224135870839395382}
   - component: {fileID: 222062410133653246}
   - component: {fileID: 114959888373083994}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: HealthBackground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
