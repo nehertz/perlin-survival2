@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.AI;
+using System;
 
 /**
  * Implements the functionality of an enemy that has health and can die
@@ -14,21 +15,25 @@ public class Enemy : MonoBehaviour
     public Camera playerCam;
     public GameObject playerObject;
     public Player player;
+    public event Action<Enemy> OnEnemyDeath;
 
     // The target for the enemy's nav mesh
     Transform target;
     // Nav mesh for the enemy
     NavMeshAgent agent;
+    // Poistion of the enemy
+    Vector3 pos;
+    // Previous position of the enemy
+    Vector3 previousPos;
+    public bool isInactive;
 
     public float attackCooldown = 0f;
 
     void Start()
     {
-        data.aggroRadius = 50f;
-        data.damage = 10f;
-        data.attackSpeed = 0.5f;
-        data.startHP = 50f;
         data.hp = data.startHP;
+
+        isInactive = false;
 
         playerObject = PlayerManager.instance.playerObject;
         target = playerObject.transform;
@@ -37,11 +42,35 @@ public class Enemy : MonoBehaviour
 
         agent = GetComponent<NavMeshAgent>();
         agent.speed = data.moveSpeed;
+
+        StartCoroutine(CheckInactive());
     }
 
     void Update()
     {
-        float distanceFromPlayer = Vector3.Distance(target.position, transform.position);
+        pos = transform.position;
+
+        // If the enemy is not on the NavMesh
+        if (!agent.isOnNavMesh) {
+            NavMeshHit closestPos;
+
+            // Move the enemy onto the NavMesh
+            if (NavMesh.SamplePosition(transform.position, out closestPos, 100f, NavMesh.AllAreas)) {
+                pos = new Vector3(closestPos.position.x, closestPos.position.y + 0.1f, closestPos.position.z);
+                transform.position = pos;
+            } else {
+                print("Moving enemy to NavMesh.");
+            }
+        }
+
+        /* Currently broken
+        // Kill the enemy if it's inactive
+        if (isInactive) {
+            Die(0);
+        }
+        */
+
+        float distanceFromPlayer = Vector3.Distance(target.position, pos);
 
         // Display the enemy's info above their head.
         DisplayEnemyInfo();
@@ -60,6 +89,21 @@ public class Enemy : MonoBehaviour
 
         // Decrease the attackCooldown according to game time passed
         attackCooldown -= Time.deltaTime;
+        previousPos = pos;
+    }
+
+    /**
+     * Checks every 3 seconds if the enemy has moved and sets the inactive boolean accordingly
+     */
+    IEnumerator CheckInactive()
+    {
+        if (pos == previousPos) {
+            isInactive = true;
+        } else {
+            isInactive = false;
+        }
+
+        yield return new WaitForSeconds(30);
     }
 
     /**
@@ -91,7 +135,9 @@ public class Enemy : MonoBehaviour
     void ChasePlayer()
     {
         // Chase player
-        agent.SetDestination(target.position);
+        if (agent.isOnNavMesh) {
+            agent.SetDestination(target.position);
+        }
     }
 
     /**
@@ -177,15 +223,17 @@ public class Enemy : MonoBehaviour
         healthBar.fillAmount = data.hp / data.startHP;
 
         if (data.hp <= 0) {
-            Die();
+            Die(10);
         }
     }
 
     /**
      * Method that imitates death; deletes the object from the scene
+     * @param pointsForDeath Number of points given to the player for this death
      */
-    void Die()
+    void Die(int pointsForDeath)
     {
+        OnEnemyDeath(this);
         Destroy(gameObject);
     }
 

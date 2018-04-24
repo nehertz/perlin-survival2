@@ -128,9 +128,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
-  m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: f4a8fe0618752467b835e1dc34756def, type: 2}
+  - {fileID: 2100000, guid: 6e428e5cba40fed4b9b680384c62360d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -247,14 +246,15 @@ MonoBehaviour:
     aggroRadius: 50
     startHP: 100
     hp: 100
-    damage: 1
-    attackSpeed: 1
-    moveSpeed: 5
+    damage: 5
+    attackSpeed: 1.25
+    moveSpeed: 4.5
   healthBar: {fileID: 114623518556255146}
   enemyInfo: {fileID: 223847173368356510}
-  playerCam: {fileID: 20658142596676364, guid: e09111aca11c9455f8e14580a9233a58, type: 2}
+  playerCam: {fileID: 0}
   playerObject: {fileID: 0}
-  player: {fileID: 114277083056568394, guid: e09111aca11c9455f8e14580a9233a58, type: 2}
+  player: {fileID: 0}
+  isInactive: 0
   attackCooldown: 0
 --- !u!114 &114708621403763326
 MonoBehaviour:
@@ -380,7 +380,7 @@ Canvas:
   m_Enabled: 1
   serializedVersion: 3
   m_RenderMode: 2
-  m_Camera: {fileID: 20658142596676364, guid: e09111aca11c9455f8e14580a9233a58, type: 2}
+  m_Camera: {fileID: 0}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
