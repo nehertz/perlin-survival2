@@ -9,13 +9,14 @@ public class Player : MonoBehaviour {
     public Text hpText;
 
 	// Use this for initialization
+    // Built-in Unity method called on the start of the game
 	void Start () {
         // Display HP at the start of game
         int hpInt = (int)hp;
 
         hpText.text = hpInt.ToString();
     }
-	
+
     /**
      * Method that subtracts the damage taken from the total health; supports death
      */

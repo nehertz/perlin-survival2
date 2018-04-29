@@ -13,6 +13,7 @@ public class Spawner : MonoBehaviour {
 
     GameObject playerObject;
 
+    // Built-in Unity method called on the start of the game
     void Start() {
 		spawnedEnemies = new List<Enemy>();
 
@@ -20,6 +21,7 @@ public class Spawner : MonoBehaviour {
     }
 
 	// Update is called once per frame
+    // Built-in Unity method
 	void Update() {
 		// If the spawner is ready to spawn
         if (spawnCooldown <= 0f && spawnedEnemies.Count < spawnLimit) {
